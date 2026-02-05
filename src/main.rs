@@ -1,51 +1,34 @@
 extern crate pnet;
 
+pub mod sniffing_mode;
+pub mod sending_mode;
+
 pub mod packet_reciever;
 pub mod game_interface;
 
+use std::path::Path;
 
-use pnet::datalink;
-use std::io;
+fn is_npcap_installed() -> bool {
+    #[cfg(windows)]
+    {
+        // Sprawdzamy standardowe lokalizacje System32 lub folderu Npcap
+        let system_path = std::env::var("SystemRoot").unwrap_or_else(|_| "C:\\Windows".to_string());
+        let dll_path = format!("{}\\System32\\wpcap.dll", system_path);
+
+        // Można też sprawdzić obecność sterownika w rejestrze lub plikach
+        Path::new(&dll_path).exists() || Path::new("C:\\Program Files\\Npcap\\NPFInstall.exe").exists()
+    }
+    #[cfg(not(windows))]
+    true // Na Linux/macOS pcap jest zazwyczaj częścią systemu
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // display avaiable interfaces
-    let interfaces = datalink::interfaces();
-    println!("Avaiable interfaces: ");
-    for iface in interfaces {
-        println!("- Name: {}, Index: {}", iface.name, iface.index);
-    }
-
-    // picking interface to sniff
-    println!("Provide interface name from list: ");
-    let mut interface_name_raw = String::new();
-    io::stdin().read_line(&mut interface_name_raw).expect("Failed to read line");
-    let interface_name = interface_name_raw.trim();
-
-    // getting interface
-    let interface = packet_reciever::read_interfaces(interface_name);
-
-    // opening packet reciever
-    let mut rx = packet_reciever::open_reciever(&interface);
-
-    // pick working mode
-    let mut pick = String::new();
-    println!("1. Packet sniffer \n2. Net hacking");
-    println!("Choose mode (1 or 2): ");
-    io::stdin().read_line(&mut pick).expect("Failed to read line");
-    
-    if pick == "1\n"
+    if is_npcap_installed()
+    // if false  // DEBUG MODE
     {
-        // recieving packets
-        packet_reciever::recieve_packets(&mut *rx);
-        Ok(())
+        sniffing_mode::program()?;
+    } else {
+        println!("Npcap is not installed. Please install Npcap to use this application.");
     }
-    else
-    {
-        println!("GAME TIME!");
-        game_interface::main_interface();
-        Ok(())
-    }
-
-
-    
+    Ok(())
 }

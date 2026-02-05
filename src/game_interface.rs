@@ -49,7 +49,7 @@ pub fn main_interface() -> Result<(), Box<dyn std::error::Error>>
                         Constraint::Min(10),   // Main log
                         Constraint::Length(3), // Status bar
                     ])
-                    .split(f.size());
+                    .split(f.area());
 
                 // 1. Nagłówek
                 let header = Paragraph::new(" MATRIX PACKET SNIFFER v1.0 ")
