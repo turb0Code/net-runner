@@ -4,11 +4,12 @@ use trust_dns_client::{
     rr::{DNSClass, Name, RecordType},
     udp::UdpClientStream,
 };
+use trust_dns_client::serialize::binary::BinEncodable;
 
 pub async fn send_dns_query(server: &str, domain: &str, record_type: RecordType,) -> anyhow::Result<Vec<u8>> // np. "8.8.8.8:53" np. "google.com"
 {
     let stream = UdpClientStream::<UdpSocket>::new(server.parse()?);
-    let (client, bg) = AsyncClient::connect(stream).await?;
+    let (mut client, bg) = AsyncClient::connect(stream).await?;
     tokio::spawn(bg);
 
     let name = Name::from_ascii(domain)?;
