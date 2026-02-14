@@ -37,7 +37,7 @@ pub async fn send_https_request(url: &str) -> anyhow::Result<Vec<u8>>
 
 pub async fn send_raw_udp(server: &str, payload: &[u8]) -> anyhow::Result<Vec<u8>> // np. "1.1.1.1:53"
 {
-    let socket = UdpSocket::bind("0.0.0.0:0").await?;
+    let socket = UdpSocket::bind("1.1.1.1:53").await?;
     socket.send_to(payload, server).await?;
 
     let mut buf = vec![0u8; 512];
